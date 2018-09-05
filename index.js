@@ -16,8 +16,9 @@ const http = require('http');
 const httpProxy = require('http-proxy');
 const httpProxyRules = require('http-proxy-rules');
 const proxy = httpProxy.createProxyServer({});
+const regEx = new RegExp(/\/ap\//);
 
-
+/*
 proxy.on('proxyRes', function(proxyRes, req, res, options) {
   //console.log(proxyRes.connection._host);
   if (proxyRes.connection._host === 'www.amazon.com') {
@@ -33,18 +34,26 @@ proxy.on('proxyReq', function(proxyReq, req, res, options) {
   }
   // I can find the host name using proxyReq variable,
 });
-
+*/
 const server = http.createServer(function(req, res) {
 
-  console.log(req.host);
+  let theTarget = 'https://alexa.amazon.com';
 
- proxy.web(req, res, {
-   target: 'https://alexa.amazon.com',
+  if (regEx.exec(req.url) !== null) {
+    console.log(req.url);
+    theTarget = 'https://www.amazon.com';
+  }
+
+
+  proxy.web(req, res, {
+   target: theTarget,
    secure: false,
    changeOrigin: true,
    protocolRewrite: true,
    followRedirects: true,
-   autoRewrite: true
+   cookieDomainRewrite: {
+     "localhost": "amazon.com",
+   }
  });
 
   //console.log(res.connection.parser);
