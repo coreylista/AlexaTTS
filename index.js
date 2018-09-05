@@ -11,9 +11,10 @@ const server = talkback(opts);
 server.start(() => console.log("Talkback Started"));
 //server.close();
 */
-const extend = require('util')._extend
+
 const http = require('http');
 const httpProxy = require('http-proxy');
+const httpProxyRules = require('http-proxy-rules');
 const proxy = httpProxy.createProxyServer({});
 
 
@@ -25,21 +26,26 @@ proxy.on('proxyRes', function(proxyRes, req, res, options) {
   // I can find the host name using proxyReq variable,
 });
 
+proxy.on('proxyReq', function(proxyReq, req, res, options) {
+  //console.log(proxyRes.connection._host);
+  if (proxyReq.connection._host === 'www.amazon.com') {
+    proxyReq.target = 'https://www.amazon.com';
+  }
+  // I can find the host name using proxyReq variable,
+});
 
 const server = http.createServer(function(req, res) {
 
-  // Need to figure out if its a call to alexa.amazon.com or www.amazon.com and change the target
-  let targetSite = 'https://alexa.amazon.com';
-
-//let targetSite = 'https://www.amazon.com';
+  console.log(req.host);
 
  proxy.web(req, res, {
-   target: targetSite,
-    secure: false,
-    changeOrigin: true,
-    protocolRewrite: true,
-    followRedirects: true
-});
+   target: 'https://alexa.amazon.com',
+   secure: false,
+   changeOrigin: true,
+   protocolRewrite: true,
+   followRedirects: true,
+   autoRewrite: true
+ });
 
   //console.log(res.connection.parser);
 
